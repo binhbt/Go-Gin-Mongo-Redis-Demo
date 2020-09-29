@@ -1,0 +1,44 @@
+version: "3.3"
+
+services:
+    block:
+        restart: always
+        build:
+            context: .
+            dockerfile: app/Dockerfile
+        image: leo/block:0.1.0
+        depends_on:
+            - mongo-db
+        networks:
+            - internal-network
+        hostname: block
+        env_file: dev.env       
+        ports:
+            - "8080:8080" 
+    mongo-db:
+        restart: always
+        image: mongo:latest
+        command: mongod --auth
+        environment:
+            MONGO_INITDB_ROOT_USERNAME: test
+            MONGO_INITDB_ROOT_PASSWORD: test
+            MONGO_INITDB_DATABASE: test
+        volumes:
+            - ./mongo/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+        ports:
+            - "27027:27017"
+        networks:
+            - internal-network
+    redis:
+        restart: always
+        image: redis:6.0-rc1
+        ports:
+            - "6379:6379"
+        volumes:
+            - redis-data:/var/lib/redis
+        networks:
+            - internal-network
+volumes:
+    redis-data:
+networks: 
+    internal-network:
